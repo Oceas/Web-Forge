@@ -3,7 +3,15 @@
   "name": "Web Tools",
   "version": "1.0",
   "description": "Web tools extension",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "browsingData"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
   "action": {
     "default_popup": "popup.html",
     "default_icon": {

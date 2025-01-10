@@ -15,13 +15,39 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+    .editor-container {
+      position: relative;
+      margin-top: 10px;
+    }
     #cssEditor {
       width: 100%;
       height: 150px;
-      margin-top: 10px;
       display: none;
       font-family: monospace;
       resize: vertical;
+    }
+    .copy-button {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      padding: 3px;
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      cursor: pointer;
+      display: none;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .copy-button svg {
+      width: 16px;
+      height: 16px;
+    }
+    .copy-button:hover {
+      background: #f0f0f0;
     }
     .controls {
       display: flex;
@@ -69,15 +95,71 @@
     input:checked + .slider:before {
       transform: translateX(26px);
     }
+    .override-control {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .description {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+    .tip-container {
+      margin: 8px 0;
+      padding: 8px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .tip-label {
+      color: #6366f1;
+      font-weight: 500;
+      margin-bottom: 4px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .tip-text {
+      color: #475569;
+      line-height: 1.4;
+    }
+    .tip-icon {
+      width: 14px;
+      height: 14px;
+      stroke: currentColor;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 <body>
   <div>Web Tools</div>
+  <div class="tip-container">
+    <div class="tip-label">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="tip-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.383a14.406 14.406 0 01-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 10-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
+      </svg>
+      Tip of the day
+    </div>
+    <div id="dailyTip" class="tip-text"></div>
+  </div>
   <div class="button-container">
     <button id="cssButton">CSS Editor</button>
-    <button id="action2">Action 2</button>
+    <button id="overridesButton">Web Overrides</button>
   </div>
-  <textarea id="cssEditor" placeholder="Enter CSS here..."></textarea>
+  
+  <!-- CSS Editor Section -->
+  <div class="editor-container">
+    <textarea id="cssEditor" placeholder="Enter CSS here..."></textarea>
+    <button class="copy-button" id="copyButton" title="Copy to clipboard" style="display: none">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184" />
+      </svg>
+    </button>
+  </div>
   <div class="controls" id="cssControls" style="display: none;">
     <button id="clearCss">Clear CSS</button>
     <div style="display: flex; align-items: center; gap: 8px;">
@@ -88,6 +170,23 @@
       </label>
     </div>
   </div>
+
+  <!-- Web Overrides Section -->
+  <div id="overridesPanel" style="display: none;">
+    <div class="override-control">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span>Disable Browser Cache</span>
+        <label class="switch">
+          <input type="checkbox" id="cacheToggle">
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="description">
+        Clears cache on every page load for this site
+      </div>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html> 

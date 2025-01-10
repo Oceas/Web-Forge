@@ -1,10 +1,25 @@
 let cssEditorVisible = false;
+let overridesVisible = false;
+
+const webDevTips = [
+  "Use 'console.table()' to display array data in a readable format",
+  "The 'rem' unit is relative to the root element's font size",
+  "CSS 'gap' property works in Flexbox too, not just Grid",
+  "'prefers-color-scheme' media query detects system dark mode",
+  "Use CSS ':focus-visible' for better keyboard navigation styling",
+  "'console.time()' and 'console.timeEnd()' measure code execution",
+  "The ':empty' selector targets elements with no children",
+  "'object-fit: cover' maintains aspect ratio like background-size",
+  "Use 'aspect-ratio' property for responsive media containers",
+  "'display: grid; place-items: center;' for perfect centering"
+];
 
 // Load saved CSS and settings when popup opens
 document.addEventListener('DOMContentLoaded', async () => {
   const editor = document.getElementById('cssEditor');
   const cssControls = document.getElementById('cssControls');
   const cssToggle = document.getElementById('cssToggle');
+  const copyButton = document.getElementById('copyButton');
   
   // Load saved CSS and enabled state
   const { savedCSS = '', cssEnabled = true } = await chrome.storage.local.get(['savedCSS', 'cssEnabled']);
@@ -16,15 +31,29 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (savedCSS) {
     cssEditorVisible = true;
     editor.style.display = 'block';
+    copyButton.style.display = 'block';
     cssControls.style.display = 'flex';
   }
+
+  // Load cache settings
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const hostname = new URL(tab.url).hostname;
+  const { cacheDisabled = {} } = await chrome.storage.local.get('cacheDisabled');
+  document.getElementById('cacheToggle').checked = cacheDisabled[hostname] || false;
+
+  // Set daily tip
+  const today = new Date().getDate();
+  const tipIndex = today % webDevTips.length;
+  document.getElementById('dailyTip').textContent = webDevTips[tipIndex];
 });
 
 document.getElementById('cssButton').addEventListener('click', () => {
   const editor = document.getElementById('cssEditor');
   const cssControls = document.getElementById('cssControls');
+  const copyButton = document.getElementById('copyButton');
   cssEditorVisible = !cssEditorVisible;
   editor.style.display = cssEditorVisible ? 'block' : 'none';
+  copyButton.style.display = cssEditorVisible ? 'block' : 'none';
   cssControls.style.display = cssEditorVisible ? 'flex' : 'none';
 });
 
@@ -98,6 +127,86 @@ function injectCSS(css) {
   return true;
 }
 
-document.getElementById('action2').addEventListener('click', () => {
-  console.log('Action 2 clicked');
-}); 
+// Add copy button handler
+document.getElementById('copyButton').addEventListener('click', async () => {
+  const editor = document.getElementById('cssEditor');
+  try {
+    await navigator.clipboard.writeText(editor.value);
+    const copyButton = document.getElementById('copyButton');
+    const originalHTML = copyButton.innerHTML;
+    
+    // Change to checkmark icon
+    copyButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    `;
+    
+    setTimeout(() => {
+      copyButton.innerHTML = originalHTML;
+    }, 1000);
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+  }
+});
+
+// Handle panel switching
+document.getElementById('overridesButton').addEventListener('click', () => {
+  const overridesPanel = document.getElementById('overridesPanel');
+  const editor = document.getElementById('cssEditor');
+  const cssControls = document.getElementById('cssControls');
+  const copyButton = document.getElementById('copyButton');
+
+  overridesVisible = !overridesVisible;
+  cssEditorVisible = false;
+
+  // Toggle panels
+  overridesPanel.style.display = overridesVisible ? 'block' : 'none';
+  editor.style.display = 'none';
+  copyButton.style.display = 'none';
+  cssControls.style.display = 'none';
+});
+
+// Handle cache toggle
+document.getElementById('cacheToggle').addEventListener('change', async (e) => {
+  const enabled = e.target.checked;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const hostname = new URL(tab.url).hostname;
+
+  // Save setting
+  const { cacheDisabled = {} } = await chrome.storage.local.get('cacheDisabled');
+  cacheDisabled[hostname] = enabled;
+  await chrome.storage.local.set({ cacheDisabled });
+
+  if (enabled) {
+    // Clear cache for this site
+    await chrome.browsingData.removeCache({
+      origins: [tab.url]
+    });
+  }
+});
+
+// Handle inspector toggle
+document.getElementById('inspectorToggle').addEventListener('change', async (e) => {
+  const enabled = e.target.checked;
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+  if (enabled) {
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      css: `
+        .web-tools-hover {
+          outline: 2px solid #4F46E5 !important;
+          outline-offset: 2px !important;
+        }
+      `
+    });
+  }
+
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: toggleInspector,
+    args: [enabled]
+  });
+});
+ 

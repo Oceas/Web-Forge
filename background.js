@@ -31,4 +31,18 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'reload') {
     chrome.runtime.reload();
   }
+});
+
+// Listen for navigation events to clear cache if needed
+chrome.webNavigation.onBeforeNavigate.addListener(async (details) => {
+  if (details.frameId === 0) { // Only handle main frame navigation
+    const hostname = new URL(details.url).hostname;
+    const { cacheDisabled = {} } = await chrome.storage.local.get('cacheDisabled');
+    
+    if (cacheDisabled[hostname]) {
+      await chrome.browsingData.removeCache({
+        origins: [details.url]
+      });
+    }
+  }
 }); 
