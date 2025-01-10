@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Web Tools",
-  "version": "1.0",
+  "version": "0.1",
   "description": "Web tools extension",
   "permissions": [
     "activeTab",
     "scripting",
     "storage",
-    "browsingData"
+    "browsingData",
+    "webNavigation",
+    "downloads"
   ],
   "host_permissions": [
     "<all_urls>"

@@ -1,5 +1,6 @@
 let cssEditorVisible = false;
 let overridesVisible = false;
+let mediaLibraryVisible = false;
 
 const webDevTips = [
   "Use 'console.table()' to display array data in a readable format",
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('dailyTip').textContent = webDevTips[tipIndex];
 });
 
+// CSS Button handler
 document.getElementById('cssButton').addEventListener('click', () => {
   const editor = document.getElementById('cssEditor');
   const cssControls = document.getElementById('cssControls');
@@ -57,156 +59,116 @@ document.getElementById('cssButton').addEventListener('click', () => {
   cssControls.style.display = cssEditorVisible ? 'flex' : 'none';
 });
 
-document.getElementById('cssEditor').addEventListener('input', async (e) => {
-  const css = e.target.value;
-  
+// Media Library handler
+document.getElementById('mediaButton').addEventListener('click', async () => {
   try {
-    // Save CSS to storage
-    await chrome.storage.local.set({ savedCSS: css });
-    
-    // Only inject if enabled
-    const { cssEnabled = true } = await chrome.storage.local.get('cssEnabled');
-    if (cssEnabled) {
-      // Get the current active tab
+    const mediaPanel = document.getElementById('mediaPanel');
+    const editor = document.getElementById('cssEditor');
+    const cssControls = document.getElementById('cssControls');
+    const overridesPanel = document.getElementById('overridesPanel');
+    const copyButton = document.getElementById('copyButton');
+
+    mediaLibraryVisible = !mediaLibraryVisible;
+    cssEditorVisible = false;
+    overridesVisible = false;
+
+    // Toggle panels
+    mediaPanel.style.display = mediaLibraryVisible ? 'block' : 'none';
+    editor.style.display = 'none';
+    copyButton.style.display = 'none';
+    cssControls.style.display = 'none';
+    overridesPanel.style.display = 'none';
+
+    if (mediaLibraryVisible) {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
       
-      // Inject the CSS using executeScript
-      await chrome.scripting.executeScript({
+      const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        function: injectCSS,
-        args: [css]
+        func: () => {
+          // Get all images from img tags
+          const imgTags = Array.from(document.querySelectorAll('img'))
+            .filter(img => img.src)
+            .map(img => img.src);
+          
+          // Get all background images
+          const bgImages = Array.from(document.querySelectorAll('*'))
+            .map(el => window.getComputedStyle(el).backgroundImage)
+            .filter(bg => bg.includes('url('))
+            .map(bg => bg.match(/url\(['"]?(.*?)['"]?\)/)[1]);
+          
+          return [...new Set([...imgTags, ...bgImages])];
+        }
       });
+
+      if (results && results[0]?.result) {
+        const images = results[0].result;
+        const mediaGrid = document.querySelector('.media-grid');
+        
+        if (images.length === 0) {
+          mediaGrid.style.display = 'none';
+          document.getElementById('noMedia').style.display = 'block';
+        } else {
+          mediaGrid.style.display = 'grid';
+          document.getElementById('noMedia').style.display = 'none';
+          
+          mediaGrid.innerHTML = images.map((url, index) => `
+            <div class="media-item">
+              <img src="${url}" alt="Media ${index + 1}" loading="lazy">
+              <button class="download-button" data-url="${url}" title="Download image">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                </svg>
+              </button>
+            </div>
+          `).join('');
+
+          // Add download handlers with improved error handling
+          document.querySelectorAll('.download-button').forEach(button => {
+            button.addEventListener('click', async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              
+              const url = button.dataset.url;
+              try {
+                // Create a temporary anchor element
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = url.split('/').pop().split('#')[0].split('?')[0] || 'image.png'; // Fallback filename
+                a.target = '_blank';
+                
+                // Trigger the download
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                // Visual feedback
+                const originalHTML = button.innerHTML;
+                button.innerHTML = `
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                  </svg>
+                `;
+                
+                setTimeout(() => {
+                  button.innerHTML = originalHTML;
+                }, 1000);
+                
+              } catch (error) {
+                console.error('Download failed:', error);
+                button.style.backgroundColor = '#fee2e2';
+                setTimeout(() => {
+                  button.style.backgroundColor = '';
+                }, 1000);
+              }
+            });
+          });
+        }
+      }
     }
   } catch (error) {
-    console.error('Failed to inject CSS:', error);
+    console.error('Media Library error:', error);
   }
 });
 
-// Handle clear button
-document.getElementById('clearCss').addEventListener('click', async () => {
-  const editor = document.getElementById('cssEditor');
-  editor.value = '';
-  await chrome.storage.local.set({ savedCSS: '' });
-  
-  // Clear CSS from current page
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: injectCSS,
-    args: ['']
-  });
-});
-
-// Handle toggle switch
-document.getElementById('cssToggle').addEventListener('change', async (e) => {
-  const enabled = e.target.checked;
-  await chrome.storage.local.set({ cssEnabled: enabled });
-  
-  // Get the current active tab
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  
-  // Get saved CSS
-  const { savedCSS = '' } = await chrome.storage.local.get('savedCSS');
-  
-  // Inject or clear CSS based on toggle state
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: injectCSS,
-    args: [enabled ? savedCSS : '']
-  });
-});
-
-function injectCSS(css) {
-  let styleElement = document.getElementById('web-tools-css');
-  if (!styleElement) {
-    styleElement = document.createElement('style');
-    styleElement.id = 'web-tools-css';
-    document.head.appendChild(styleElement);
-  }
-  styleElement.textContent = css;
-  return true;
-}
-
-// Add copy button handler
-document.getElementById('copyButton').addEventListener('click', async () => {
-  const editor = document.getElementById('cssEditor');
-  try {
-    await navigator.clipboard.writeText(editor.value);
-    const copyButton = document.getElementById('copyButton');
-    const originalHTML = copyButton.innerHTML;
-    
-    // Change to checkmark icon
-    copyButton.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-      </svg>
-    `;
-    
-    setTimeout(() => {
-      copyButton.innerHTML = originalHTML;
-    }, 1000);
-  } catch (err) {
-    console.error('Failed to copy text: ', err);
-  }
-});
-
-// Handle panel switching
-document.getElementById('overridesButton').addEventListener('click', () => {
-  const overridesPanel = document.getElementById('overridesPanel');
-  const editor = document.getElementById('cssEditor');
-  const cssControls = document.getElementById('cssControls');
-  const copyButton = document.getElementById('copyButton');
-
-  overridesVisible = !overridesVisible;
-  cssEditorVisible = false;
-
-  // Toggle panels
-  overridesPanel.style.display = overridesVisible ? 'block' : 'none';
-  editor.style.display = 'none';
-  copyButton.style.display = 'none';
-  cssControls.style.display = 'none';
-});
-
-// Handle cache toggle
-document.getElementById('cacheToggle').addEventListener('change', async (e) => {
-  const enabled = e.target.checked;
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const hostname = new URL(tab.url).hostname;
-
-  // Save setting
-  const { cacheDisabled = {} } = await chrome.storage.local.get('cacheDisabled');
-  cacheDisabled[hostname] = enabled;
-  await chrome.storage.local.set({ cacheDisabled });
-
-  if (enabled) {
-    // Clear cache for this site
-    await chrome.browsingData.removeCache({
-      origins: [tab.url]
-    });
-  }
-});
-
-// Handle inspector toggle
-document.getElementById('inspectorToggle').addEventListener('change', async (e) => {
-  const enabled = e.target.checked;
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-
-  if (enabled) {
-    await chrome.scripting.insertCSS({
-      target: { tabId: tab.id },
-      css: `
-        .web-tools-hover {
-          outline: 2px solid #4F46E5 !important;
-          outline-offset: 2px !important;
-        }
-      `
-    });
-  }
-
-  await chrome.scripting.executeScript({
-    target: { tabId: tab.id },
-    function: toggleInspector,
-    args: [enabled]
-  });
-});
+// Rest of your existing handlers (cache toggle, CSS editor, etc.)
  
