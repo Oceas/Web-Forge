@@ -180,10 +180,129 @@
       padding: 20px;
       font-size: 14px;
     }
+    /* Add these dark theme styles after your existing styles */
+    .dark-theme {
+      background: #1e293b !important;
+      color: #e2e8f0 !important;
+    }
+    
+    .dark-theme .tip-container {
+      background: #334155;
+      border-color: #475569;
+    }
+    
+    .dark-theme .tip-text {
+      color: #cbd5e1;
+    }
+    
+    .dark-theme #cssEditor {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+    }
+    
+    .dark-theme .copy-button {
+      background: #334155;
+      border-color: #475569;
+    }
+    
+    .dark-theme .copy-button:hover {
+      background: #475569;
+    }
+    
+    .dark-theme .override-control {
+      background: #334155;
+      border-color: #475569;
+    }
+    
+    .dark-theme .description {
+      color: #94a3b8;
+    }
+    
+    .dark-theme button {
+      background: #334155;
+      color: #e2e8f0;
+      border: 1px solid #475569;
+    }
+    
+    .dark-theme button:hover {
+      background: #475569;
+    }
+    
+    .dark-theme .media-item {
+      border-color: #475569;
+      background: #334155;
+    }
+    
+    .dark-theme .download-button {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: #475569;
+    }
+    
+    .dark-theme .download-button:hover {
+      background: #475569;
+    }
+    
+    .dark-theme .no-media {
+      color: #94a3b8;
+    }
+    
+    .dark-theme .slider {
+      background-color: #475569;
+    }
+    
+    .dark-theme input:checked + .slider {
+      background-color: #3b82f6;
+    }
+    
+    .dark-theme .slider:before {
+      background-color: #e2e8f0;
+    }
+    .icon-button {
+      padding: 4px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+    
+    .theme-icon {
+      width: 18px;
+      height: 18px;
+      color: #1e293b; /* Dark color for light mode */
+    }
+    
+    /* Dark mode styles */
+    .dark-theme {
+      background: #1e293b;
+      color: #e2e8f0;
+    }
+    
+    .dark-theme .theme-icon {
+      color: #ffffff; /* White color for dark mode */
+    }
+    
+    .icon-button:hover {
+      background: #f0f0f0;
+    }
+    
+    .dark-theme .icon-button:hover {
+      background: #475569;
+    }
   </style>
 </head>
 <body>
-  <div>Web Tools</div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div>Web Forge</div>
+    <button id="themeToggle" class="icon-button" title="Toggle theme">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="theme-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+      </svg>
+    </button>
+  </div>
   <div class="tip-container">
     <div class="tip-label">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="tip-icon">

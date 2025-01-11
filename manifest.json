@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Web Forge",
   "version": "0.1",
-  "description": "Web tools extension",
+  "description": "Web development toolkit for quick CSS editing, media downloading, and web overrides",
   "permissions": [
     "activeTab",
     "scripting",

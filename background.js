@@ -16,10 +16,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 // Function to inject CSS
 function injectCSS(css) {
-  let styleElement = document.getElementById('web-tools-css');
+  let styleElement = document.getElementById('web-forge-css');
   if (!styleElement) {
     styleElement = document.createElement('style');
-    styleElement.id = 'web-tools-css';
+    styleElement.id = 'web-forge-css';
     document.head.appendChild(styleElement);
   }
   styleElement.textContent = css;
