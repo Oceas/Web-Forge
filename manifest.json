@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Web Tools",
+  "name": "Web Forge",
   "version": "0.1",
   "description": "Web tools extension",
   "permissions": [
@@ -17,11 +17,11 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "images/icon16.png"
+      "16": "images/web-forge.png"
     }
   },
   "icons": {
-    "16": "images/icon16.png"
+    "16": "images/web-forge.png"
   },
   "background": {
     "service_worker": "background.js"

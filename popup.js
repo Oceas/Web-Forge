@@ -22,11 +22,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   const cssToggle = document.getElementById('cssToggle');
   const copyButton = document.getElementById('copyButton');
   
-  // Load saved CSS and enabled state
+  // Load saved CSS and enabled state (default enabled to true)
   const { savedCSS = '', cssEnabled = true } = await chrome.storage.local.get(['savedCSS', 'cssEnabled']);
   
   editor.value = savedCSS;
-  cssToggle.checked = cssEnabled;
+  cssToggle.checked = true; // Always set to true by default
+  
+  // Save the enabled state as true
+  await chrome.storage.local.set({ cssEnabled: true });
   
   // Show controls if we have CSS
   if (savedCSS) {
@@ -169,6 +172,78 @@ document.getElementById('mediaButton').addEventListener('click', async () => {
     console.error('Media Library error:', error);
   }
 });
+
+// CSS Editor input handler
+document.getElementById('cssEditor').addEventListener('input', async (e) => {
+  const css = e.target.value;
+  
+  try {
+    // Save CSS to storage
+    await chrome.storage.local.set({ savedCSS: css });
+    
+    // Only inject if enabled
+    const { cssEnabled = true } = await chrome.storage.local.get('cssEnabled');
+    if (cssEnabled) {
+      // Get the current active tab
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+      
+      // Inject the CSS using executeScript
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        function: injectCSS,
+        args: [css]
+      });
+    }
+  } catch (error) {
+    console.error('Failed to inject CSS:', error);
+  }
+});
+
+// Handle clear button
+document.getElementById('clearCss').addEventListener('click', async () => {
+  const editor = document.getElementById('cssEditor');
+  editor.value = '';
+  await chrome.storage.local.set({ savedCSS: '' });
+  
+  // Clear CSS from current page
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: injectCSS,
+    args: ['']
+  });
+});
+
+// Handle CSS toggle switch
+document.getElementById('cssToggle').addEventListener('change', async (e) => {
+  const enabled = e.target.checked;
+  await chrome.storage.local.set({ cssEnabled: enabled });
+  
+  // Get the current active tab
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  
+  // Get saved CSS
+  const { savedCSS = '' } = await chrome.storage.local.get('savedCSS');
+  
+  // Inject or clear CSS based on toggle state
+  await chrome.scripting.executeScript({
+    target: { tabId: tab.id },
+    function: injectCSS,
+    args: [enabled ? savedCSS : '']
+  });
+});
+
+// CSS injection function
+function injectCSS(css) {
+  let styleElement = document.getElementById('web-tools-css');
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.id = 'web-tools-css';
+    document.head.appendChild(styleElement);
+  }
+  styleElement.textContent = css;
+  return true;
+}
 
 // Rest of your existing handlers (cache toggle, CSS editor, etc.)
  
