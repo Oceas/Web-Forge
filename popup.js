@@ -2,6 +2,7 @@ let cssEditorVisible = false;
 let overridesVisible = false;
 let mediaLibraryVisible = false;
 let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+let responsiveVisible = false;
 
 const webDevTips = [
   "Use 'console.table()' to display array data in a readable format",
@@ -295,4 +296,331 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', asy
     updateTheme();
   }
 });
+
+// Update the Responsive button handler
+document.getElementById('responsiveButton').addEventListener('click', () => {
+  const responsivePanel = document.getElementById('responsivePanel');
+  const editor = document.getElementById('cssEditor');
+  const cssControls = document.getElementById('cssControls');
+  const overridesPanel = document.getElementById('overridesPanel');
+  const mediaPanel = document.getElementById('mediaPanel');
+  const copyButton = document.getElementById('copyButton');
+
+  responsiveVisible = !responsiveVisible;
+  cssEditorVisible = false;
+  overridesVisible = false;
+  mediaLibraryVisible = false;
+
+  // Toggle panels
+  responsivePanel.style.display = responsiveVisible ? 'block' : 'none';
+  editor.style.display = 'none';
+  copyButton.style.display = 'none';
+  cssControls.style.display = 'none';
+  overridesPanel.style.display = 'none';
+  mediaPanel.style.display = 'none';
+});
+
+// Update the device button handlers
+document.querySelectorAll('.device-button').forEach(button => {
+  button.addEventListener('click', async () => {
+    try {
+      const width = parseInt(button.dataset.width);
+      const height = parseInt(button.dataset.height);
+      const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
+      if (width === 0) {
+        // For reset button, open in full size
+        await chrome.windows.create({
+          url: tab.url,
+          state: 'maximized'
+        });
+      } else {
+        // Add some padding for window chrome
+        const windowPadding = {
+          width: 16,
+          height: 88  // Account for title bar and window chrome
+        };
+
+        await chrome.windows.create({
+          url: tab.url,
+          width: width + windowPadding.width,
+          height: height + windowPadding.height,
+          type: 'popup',
+          focused: true
+        });
+      }
+
+      // Close the popup
+      window.close();
+    } catch (error) {
+      console.error('Failed to open responsive view:', error);
+    }
+  });
+});
+
+// Updated function to handle responsive mode
+function setResponsiveMode(width, height) {
+  // Handle reset case
+  if (width === '0' && height === '0') {
+    // Reset viewport
+    let viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.content = 'width=device-width, initial-scale=1.0';
+    }
+    // Reset any custom styles
+    document.documentElement.style.width = '';
+    document.documentElement.style.height = '';
+    document.body.style.width = '';
+    document.body.style.height = '';
+    document.body.style.transform = '';
+    return;
+  }
+
+  // Set viewport for mobile view
+  let viewport = document.querySelector('meta[name="viewport"]');
+  if (!viewport) {
+    viewport = document.createElement('meta');
+    viewport.name = 'viewport';
+    document.head.appendChild(viewport);
+  }
+  
+  // Force the viewport width and disable user scaling
+  viewport.content = `width=${width}, height=${height}, initial-scale=1.0, maximum-scale=1.0, user-scalable=no`;
+
+  // Add necessary styles to simulate device size
+  const style = document.createElement('style');
+  style.textContent = `
+    html {
+      width: ${width}px !important;
+      height: ${height}px !important;
+      overflow-x: hidden !important;
+    }
+    body {
+      width: ${width}px !important;
+      min-width: ${width}px !important;
+      max-width: ${width}px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow-x: hidden !important;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Force layout recalculation
+  document.documentElement.style.transform = 'scale(1)';
+  document.body.style.transform = 'scale(1)';
+}
+
+// Update the responsive button handler
+document.getElementById('openResponsiveView').addEventListener('click', async () => {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    
+    // Inject the responsive viewer into the current page
+    await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      function: injectResponsiveViewer,
+      args: [tab.url]
+    });
+
+    // Inject the styles
+    await chrome.scripting.insertCSS({
+      target: { tabId: tab.id },
+      css: `
+        .responsive-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.75);
+          z-index: 999999;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .responsive-viewer {
+          background: white;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+          position: relative;
+          width: 90vw;
+          height: 90vh;
+          display: flex;
+        }
+
+        .responsive-frame {
+          flex: 1;
+          padding: 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        .responsive-frame iframe {
+          border: 1px solid #e2e8f0;
+          border-radius: 4px;
+          transition: all 0.3s ease;
+        }
+
+        .device-controls {
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          background: white;
+          padding: 8px;
+          border-radius: 8px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .device-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 40px;
+          height: 40px;
+          border: 1px solid #e2e8f0;
+          border-radius: 6px;
+          background: white;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .device-button:hover {
+          background: #f8fafc;
+          transform: translateY(-1px);
+        }
+
+        .device-button svg {
+          width: 20px;
+          height: 20px;
+          color: #4f46e5;
+        }
+
+        .device-button.active {
+          background: #4f46e5;
+        }
+
+        .device-button.active svg {
+          color: white;
+        }
+
+        .close-button {
+          position: absolute;
+          top: 20px;
+          left: 20px;
+          background: none;
+          border: none;
+          color: #1e293b;
+          font-size: 24px;
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 6px;
+        }
+
+        .close-button:hover {
+          background: #f1f5f9;
+        }
+
+        .rotate-90 {
+          transform: rotate(90deg);
+        }
+      `
+    });
+
+    window.close();
+  } catch (error) {
+    console.error('Failed to inject responsive viewer:', error);
+  }
+});
+
+function injectResponsiveViewer(pageUrl) {
+  // Create the viewer container
+  const overlay = document.createElement('div');
+  overlay.className = 'responsive-overlay';
+  
+  overlay.innerHTML = `
+    <div class="responsive-viewer">
+      <button class="close-button" title="Close">×</button>
+      <div class="responsive-frame">
+        <iframe src="${pageUrl}"></iframe>
+      </div>
+      <div class="device-controls">
+        <button class="device-button" data-width="375" data-height="667" title="Mobile Portrait">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+          </svg>
+        </button>
+        <button class="device-button" data-width="667" data-height="375" title="Mobile Landscape">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="rotate-90">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+          </svg>
+        </button>
+        <button class="device-button" data-width="768" data-height="1024" title="Tablet Portrait">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </button>
+        <button class="device-button" data-width="1024" data-height="768" title="Tablet Landscape">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="rotate-90">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25z" />
+          </svg>
+        </button>
+        <button class="device-button" data-width="1280" data-height="800" title="Desktop">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  `;
+
+  // Add to page
+  document.body.appendChild(overlay);
+
+  // Get elements
+  const frame = overlay.querySelector('iframe');
+  const closeButton = overlay.querySelector('.close-button');
+
+  // Set initial size
+  frame.style.width = '100%';
+  frame.style.height = '100%';
+
+  // Handle device buttons
+  overlay.querySelectorAll('.device-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const width = button.dataset.width;
+      const height = button.dataset.height;
+      
+      frame.style.width = width + 'px';
+      frame.style.height = height + 'px';
+
+      // Update active state
+      overlay.querySelectorAll('.device-button').forEach(btn => 
+        btn.classList.remove('active')
+      );
+      button.classList.add('active');
+    });
+  });
+
+  // Handle close button
+  closeButton.addEventListener('click', () => {
+    overlay.remove();
+  });
+
+  // Handle click outside to close
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  });
+}
  

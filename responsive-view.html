@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      background: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .frame-container {
+      position: relative;
+      transition: all 0.3s ease;
+      margin: auto;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    webview {
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      background: white;
+    }
+
+    .device-controls {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: white;
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+    }
+
+    .device-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .device-button:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    .device-button svg {
+      width: 20px;
+      height: 20px;
+      color: #4f46e5;
+    }
+
+    .device-button.active {
+      background: #4f46e5;
+    }
+
+    .device-button.active svg {
+      color: white;
+    }
+
+    .rotate-90 {
+      transform: rotate(90deg);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1e293b;
+      }
+
+      .device-controls {
+        background: #334155;
+      }
+
+      .device-button {
+        background: #334155;
+        border-color: #475569;
+      }
+
+      .device-button:hover {
+        background: #475569;
+      }
+
+      .device-button svg {
+        color: #818cf8;
+      }
+
+      .device-button.active {
+        background: #818cf8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame-container">
+    <webview id="mainFrame" partition="responsive"></webview>
+  </div>
+  
+  <div class="device-controls">
+    <button class="device-button" data-width="375" data-height="667" title="Mobile Portrait">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+      </svg>
+    </button>
+    
+    <button class="device-button" data-width="667" data-height="375" title="Mobile Landscape">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="rotate-90">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
+      </svg>
+    </button>
+
+    <button class="device-button" data-width="768" data-height="1024" title="Tablet Portrait">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    </button>
+
+    <button class="device-button" data-width="1024" data-height="768" title="Tablet Landscape">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="rotate-90">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5h3m-6.75 2.25h10.5a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 4.5v15a2.25 2.25 0 002.25 2.25z" />
+      </svg>
+    </button>
+
+    <button class="device-button" data-width="1280" data-height="800" title="Desktop">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+      </svg>
+    </button>
+  </div>
+
+  <script>
+    // Get URL from query params
+    const urlToView = new URLSearchParams(window.location.search).get('url');
+    const mainFrame = document.getElementById('mainFrame');
+    
+    // Set initial size and src
+    mainFrame.style.width = '100%';
+    mainFrame.style.height = '100%';
+    mainFrame.src = urlToView;
+
+    // Handle device buttons
+    document.querySelectorAll('.device-button').forEach(button => {
+      button.addEventListener('click', () => {
+        const width = button.dataset.width;
+        const height = button.dataset.height;
+        const container = document.querySelector('.frame-container');
+        
+        // Update webview size with smooth transition
+        container.style.width = width + 'px';
+        container.style.height = height + 'px';
+        mainFrame.style.width = '100%';
+        mainFrame.style.height = '100%';
+
+        // Update active state
+        document.querySelectorAll('.device-button').forEach(btn => 
+          btn.classList.remove('active')
+        );
+        button.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html> 

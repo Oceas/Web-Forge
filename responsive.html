@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Responsive Preview</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    
+    .device-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    
+    .device-frame {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .device-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .device-name {
+      font-weight: 500;
+    }
+    
+    .device-dims {
+      color: #64748b;
+      font-size: 14px;
+    }
+    
+    .preview-container {
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    
+    webview {
+      border: none;
+      background: white;
+    }
+
+    /* Dark theme */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1e293b;
+        color: #e2e8f0;
+      }
+      .device-frame {
+        border-color: #475569;
+      }
+      .preview-container {
+        border-color: #475569;
+      }
+      .device-dims {
+        color: #94a3b8;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="device-grid">
+    <!-- Devices will be added here via JavaScript -->
+  </div>
+  <script>
+    const devices = [
+      { name: 'Mobile Portrait (375×667)', width: 375, height: 667 },
+      { name: 'Tablet Portrait (768×1024)', width: 768, height: 1024 },
+      { name: 'Desktop (1280×800)', width: 1280, height: 800 }
+    ];
+
+    // Get the URL from the query parameters
+    const urlToPreview = new URLSearchParams(window.location.search).get('url');
+
+    if (urlToPreview) {
+      const deviceGrid = document.querySelector('.device-grid');
+      
+      devices.forEach(device => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'device-frame';
+        wrapper.innerHTML = `
+          <div class="device-header">
+            <span class="device-name">${device.name}</span>
+            <span class="device-dims">${device.width} × ${device.height}</span>
+          </div>
+          <div class="preview-container">
+            <iframe 
+              src="${urlToPreview}"
+              style="width: ${device.width}px; height: ${device.height}px;"
+              title="${device.name}"
+            ></iframe>
+          </div>
+        `;
+        deviceGrid.appendChild(wrapper);
+      });
+    }
+  </script>
+</body>
+</html> 

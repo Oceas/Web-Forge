@@ -292,6 +292,257 @@
     .dark-theme .icon-button:hover {
       background: #475569;
     }
+    .device-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 10px 0;
+    }
+    
+    .device-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .device-button:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .device-button svg {
+      width: 24px;
+      height: 24px;
+      color: #4f46e5;
+    }
+    
+    .device-button .rotate-90 {
+      transform: rotate(90deg);
+    }
+    
+    .device-size {
+      font-size: 11px;
+      color: #64748b;
+    }
+    
+    /* Dark theme */
+    .dark-theme .device-button {
+      background: #334155;
+      border-color: #475569;
+    }
+    
+    .dark-theme .device-button:hover {
+      background: #475569;
+    }
+    
+    .dark-theme .device-button svg {
+      color: #818cf8;
+    }
+    
+    .dark-theme .device-size {
+      color: #94a3b8;
+    }
+    .responsive-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: white;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .responsive-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .responsive-header h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .close-button {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 8px;
+    }
+
+    .responsive-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .preview-container {
+      flex: 1;
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .preview-container iframe {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .device-list {
+      width: 300px;
+      border-left: 1px solid #e2e8f0;
+      overflow-y: auto;
+      padding: 16px;
+    }
+
+    .device-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+    }
+
+    .device-preview {
+      width: 100px;
+      height: 60px;
+      border: 1px solid #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .device-preview iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      transform-origin: 0 0;
+    }
+
+    .device-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .device-name {
+      font-weight: 500;
+      font-size: 14px;
+    }
+
+    .device-dims {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    /* Dark theme styles */
+    .dark-theme .responsive-modal {
+      background: #1e293b;
+    }
+
+    .dark-theme .responsive-header {
+      border-color: #475569;
+    }
+
+    .dark-theme .device-list {
+      border-color: #475569;
+    }
+
+    .dark-theme .device-item {
+      border-color: #475569;
+    }
+
+    .dark-theme .device-preview {
+      border-color: #475569;
+    }
+
+    .dark-theme .device-dims {
+      color: #94a3b8;
+    }
+
+    .responsive-controls {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      padding: 10px 0;
+    }
+
+    .device-button {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      border: 1px solid #e2e8f0;
+      border-radius: 4px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .device-size {
+      font-size: 12px;
+      color: #64748b;
+    }
+
+    .dark-theme .device-button {
+      background: #334155;
+      border-color: #475569;
+    }
+
+    .dark-theme .device-button:hover {
+      background: #475569;
+    }
+
+    .dark-theme .device-size {
+      color: #94a3b8;
+    }
+
+    .full-width-button {
+      width: 100%;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 10px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .full-width-button:hover {
+      background: #4338ca;
+    }
+
+    .button-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    .dark-theme .full-width-button {
+      background: #6366f1;
+    }
+
+    .dark-theme .full-width-button:hover {
+      background: #4f46e5;
+    }
   </style>
 </head>
 <body>
@@ -316,6 +567,7 @@
     <button id="cssButton">CSS Editor</button>
     <button id="overridesButton">Web Overrides</button>
     <button id="mediaButton">Media Library</button>
+    <button id="responsiveButton">Responsive</button>
   </div>
   
   <!-- CSS Editor Section -->
@@ -362,6 +614,16 @@
     <div id="noMedia" class="no-media" style="display: none;">
       No media found on this page
     </div>
+  </div>
+
+  <!-- Add new Responsive Testing Section -->
+  <div id="responsivePanel" style="display: none;">
+    <button id="openResponsiveView" class="full-width-button">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="button-icon">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5L7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+      </svg>
+      Open Responsive View
+    </button>
   </div>
 
   <script src="popup.js"></script>
