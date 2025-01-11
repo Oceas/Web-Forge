@@ -516,7 +516,6 @@ document.getElementById('openResponsiveView').addEventListener('click', async ()
           background: none;
           border: none;
           color: #1e293b;
-          font-size: 24px;
           cursor: pointer;
           width: 40px;
           height: 40px;
@@ -524,6 +523,12 @@ document.getElementById('openResponsiveView').addEventListener('click', async ()
           align-items: center;
           justify-content: center;
           border-radius: 6px;
+          padding: 0;
+        }
+
+        .close-button svg {
+          width: 24px;
+          height: 24px;
         }
 
         .close-button:hover {
@@ -549,7 +554,11 @@ function injectResponsiveViewer(pageUrl) {
   
   overlay.innerHTML = `
     <div class="responsive-viewer">
-      <button class="close-button" title="Close">×</button>
+      <button class="close-button" title="Close">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
       <div class="responsive-frame">
         <iframe src="${pageUrl}"></iframe>
       </div>
