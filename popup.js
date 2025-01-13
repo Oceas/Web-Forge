@@ -1,5 +1,4 @@
 let cssEditorVisible = false;
-let overridesVisible = false;
 let mediaLibraryVisible = false;
 let isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 let responsiveVisible = false;
@@ -28,7 +27,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const { savedCSS = '', cssEnabled = true } = await chrome.storage.local.get(['savedCSS', 'cssEnabled']);
   
   editor.value = savedCSS;
-  cssToggle.checked = true; // Always set to true by default
+  cssToggle.checked = true;
   
   // Save the enabled state as true
   await chrome.storage.local.set({ cssEnabled: true });
@@ -40,12 +39,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     copyButton.style.display = 'block';
     cssControls.style.display = 'flex';
   }
-
-  // Load cache settings
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-  const hostname = new URL(tab.url).hostname;
-  const { cacheDisabled = {} } = await chrome.storage.local.get('cacheDisabled');
-  document.getElementById('cacheToggle').checked = cacheDisabled[hostname] || false;
 
   // Set daily tip
   const today = new Date().getDate();
@@ -81,19 +74,16 @@ document.getElementById('mediaButton').addEventListener('click', async () => {
     const mediaPanel = document.getElementById('mediaPanel');
     const editor = document.getElementById('cssEditor');
     const cssControls = document.getElementById('cssControls');
-    const overridesPanel = document.getElementById('overridesPanel');
     const copyButton = document.getElementById('copyButton');
 
     mediaLibraryVisible = !mediaLibraryVisible;
     cssEditorVisible = false;
-    overridesVisible = false;
 
     // Toggle panels
     mediaPanel.style.display = mediaLibraryVisible ? 'block' : 'none';
     editor.style.display = 'none';
     copyButton.style.display = 'none';
     cssControls.style.display = 'none';
-    overridesPanel.style.display = 'none';
 
     if (mediaLibraryVisible) {
       const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
