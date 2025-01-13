@@ -632,4 +632,36 @@ function injectResponsiveViewer(pageUrl) {
     }
   });
 }
+
+// Add copy button handler
+document.getElementById('copyButton').addEventListener('click', async () => {
+  const cssEditor = document.getElementById('cssEditor');
+  const copyButton = document.getElementById('copyButton');
+  
+  try {
+    await navigator.clipboard.writeText(cssEditor.value);
+    
+    // Visual feedback
+    const originalHTML = copyButton.innerHTML;
+    copyButton.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+      </svg>
+    `;
+    
+    // Reset after 1 second
+    setTimeout(() => {
+      copyButton.innerHTML = originalHTML;
+    }, 1000);
+    
+  } catch (err) {
+    console.error('Failed to copy text: ', err);
+    
+    // Error feedback
+    copyButton.style.backgroundColor = '#fee2e2';
+    setTimeout(() => {
+      copyButton.style.backgroundColor = '';
+    }, 1000);
+  }
+});
  
